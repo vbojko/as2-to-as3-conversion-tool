@@ -122,7 +122,7 @@ else
             #closing ServiceMain variable
             var_Servicemain="$var_Servicemain}"
             # creating clientSSL profile
-            var_serverSSLProfile="\"ServerSslprofile\": {\"class\":\"TLS_Server\", \"ciphers\":$var_clientSSLCipher, \"certificates\":[{\"certificate\":\"serversslcert\"}]}, \"serversslcert\":{\"class\":\"Certificate\", \"certificate\":{\"bigip\":$var_clientSSLcert}, \"chainCA\":{\"bigip\":$var_clientSSLChain}, \"privatekey\":{\"bigip\":$var_clientSSLkey}}  "
+            var_serverSSLProfile="\"ServerSslprofile\": {\"class\":\"TLS_Server\", \"ciphers\":$var_clientSSLCipher, \"certificates\":[{\"certificate\":\"serversslcert\"}]}, \"serversslcert\":{\"class\":\"Certificate\", \"certificate\":{\"bigip\":$var_clientSSLcert}, \"chainCA\":{\"bigip\":$var_clientSSLChain}, \"privateKey\":{\"bigip\":$var_clientSSLkey}}  "
             # Modify to incorporate certificate CS's $var_clientSSLChain
             var_clientSSLProfile="\"ClientSslProfile\": {\"class\":\"TLS_Client\", \"validateCertificate\": false }"
             #closing declaration
@@ -147,7 +147,7 @@ else
             #closing ServiceMain variable
             var_Servicemain="$var_Servicemain}"
             # creating clientSSL profile
-            var_serverSSLProfile="\"ServerSslprofile\": {\"class\":\"TLS_Server\", \"ciphers\":$var_clientSSLCipher, \"certificates\":[{\"certificate\":\"serversslcert\"}]}, \"serversslcert\":{\"class\":\"Certificate\", \"certificate\":{\"bigip\":$var_clientSSLcert}, \"chainCA\":{\"bigip\":$var_clientSSLChain}, \"privatekey\":{\"bigip\":$var_clientSSLkey}}  "
+            var_serverSSLProfile="\"ServerSslprofile\": {\"class\":\"TLS_Server\", \"ciphers\":$var_clientSSLCipher, \"certificates\":[{\"certificate\":\"serversslcert\"}]}, \"serversslcert\":{\"class\":\"Certificate\", \"certificate\":{\"bigip\":$var_clientSSLcert}, \"chainCA\":{\"bigip\":$var_clientSSLChain}, \"privateKey\":{\"bigip\":$var_clientSSLkey}}  "
             # Modify to incorporate certificate CS's $var_clientSSLChain
             #closing declaration
             var_Servicemain="$var_Servicemain, $var_serverSSLProfile"
