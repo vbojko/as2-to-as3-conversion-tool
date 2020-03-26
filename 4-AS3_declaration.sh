@@ -107,7 +107,7 @@ else
             var_ServicemainClass="\"class\":\"Service_HTTPS\""
             var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
             var_ServicemainPool="\"pool\":\"serverpool\""
-            var_ServicemainServerSSL="\"serverTSL\":\"ServerSslprofile\""
+            var_ServicemainServerSSL="\"serverTLS\":\"ServerSslprofile\""
             var_ServicemainClientSSL="\"clientTLS\":\"ClientSslProfile\""
             # Create preliminary Servicemain declaration. have to add SSL specific information
             var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat, $var_ServicemainServerSSL, $var_ServicemainClientSSL"
@@ -133,7 +133,7 @@ else
             var_ServicemainClass="\"class\":\"Service_HTTPS\""
             var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
             var_ServicemainPool="\"pool\":\"serverpool\""
-            var_ServicemainServerSSL="\"serverTSL\":\"ServerSslprofile\""
+            var_ServicemainServerSSL="\"serverTLS\":\"ServerSslprofile\""
             # Create preliminary Servicemain declaration. have to add SSL specific information
             var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat, $var_ServicemainServerSSL, $var_ServicemainClientSSL"
             if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
