@@ -25,12 +25,24 @@ else
     fi
 
     leng=$(jq '.items |length' $ORIGIN )
-    echo "leng is: $leng"
+    echo "number of available applications is: $leng"
+    echo "start extracting"
     i=0
     while [ $i -lt $leng ]
     do
-        # parse the content of the AS2 element and store it to a filename of the application in each array element and par
-        jq -r ".items[$i]" $ORIGIN > ./$location/$(jq -r ".items[$i].name" $ORIGIN).json
-        i=$(( $i + 1 ))
+        # parse the content of the AS2 element and store it to a filename of the application in each array element
+        templateid=$(jq -r ".items[$i].template" $ORIGIN)
+        echo "extracting App $i"
+        # extract the file only for applications that were created with the app services iApp.
+        if [[ $templateid == "/Common/appsvcs_integration_v2.0.003" ]]; then
+            outputfilename=$(jq -r ".items[$i].name" $ORIGIN)
+            outputfilename=${outputfilename//./_}
+            jq -r ".items[$i]" $ORIGIN > ./$location/$outputfilename.json
+            i=$(( $i + 1 ))
+        else 
+            filename=$(jq -r ".items[$i].name" $ORIGIN)
+            echo "app $filename not extracted, because it was not created by AppServices template"
+            i=$(( $i + 1 ))
+        fi
     done
 fi

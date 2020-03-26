@@ -14,7 +14,6 @@ done
 
 # check if conf directory exist, if not create it
 
-
 if [ -d "$location" ] ; then
     echo "Directory $location exists." 
 else
@@ -38,7 +37,7 @@ filelocation="./$location/"
 
     for file in $filelocation*.json
     do
-        echo "File currently worked on is:  $file"
+        echo "poolcreation: File currently worked on is:  $file"
         # find out if this is a monitor or pool member config object
         unset var_monitorNameOrder var_monitorOptionsOrder var_monitorTypeOrder
         unset var_monitorName var_monitorOptions var_monitorType
@@ -53,6 +52,8 @@ filelocation="./$location/"
         tableslength=$( jq '.tables' $file | jq length )
         tablescounter=0
         appname=$( jq -r  ".name" $file )
+        # replace dots in appname with underscore
+        appname=${appname//./_}
         poolBlob="{ \"serverpool\": { \"class\": \"Pool\" "
         var_LbMethod=" \"loadBalancingMode\": \"round-robin\" "
         while [ $tablescounter -lt $tableslength ]

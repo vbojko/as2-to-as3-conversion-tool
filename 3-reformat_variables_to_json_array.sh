@@ -39,13 +39,15 @@ else
     # Now I tell the script in which folder my input files are
     filelocation="$location"
     #Adding the for loop for every file on the filelocation folder
-    echo "filelocation: $filelocation"
+    #echo "filelocation: $filelocation"
     
     for file in $filelocation/*.json
     do
         appname=$( jq -r  ".name" $file )
+        #replacong dots with underscores for appname
+        appname=${appname//./_}
         echo ""
-        echo "working on file: $file"
+        echo "variable reformating: File currently worked on: $file"
         variablecount=$( jq ".variables" $file | jq length)
         variablenumber=0
         varjson="{"

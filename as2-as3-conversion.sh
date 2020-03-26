@@ -17,11 +17,11 @@ if [[ -z $location ]] && [[ -z $ORIGIN ]]; then
 else
     # Here the logic applies
     # The first step is to check if the destination directory exists and if not, create it.
-    echo "calls other scripts"
-    ./0-extract_as2_config_with_parameters.sh -o $ORIGIN -d $location &&
-    echo "done"
+    echo "start extracting applications from input file "
+    ./1-extract_as2_config_with_parameters.sh -o $ORIGIN -d $location &&
+    echo "done extracting, start creating pool definitions"
     ./2-AS3_declaration_Pool.sh  -d $location &
-    echo "done pools"
+    echo "start reformating variables from AS2 declaration"
     ./3-reformat_variables_to_json_array.sh -d $location &&
     echo "done vars, ready for declaration"
     ./4-AS3_declaration.sh -d $location

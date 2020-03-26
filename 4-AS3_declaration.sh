@@ -56,8 +56,10 @@ else
     #Adding the for loop for every file on the filelocation folder
      for file in $filelocation/*.json
     do
-        echo "working on file: $file"
+        echo "Declaration creation: working on file: $file"
         appname=$( jq -r  ".name" $file )
+        # replace dots in appname with underscores, becasue there are some issues with dots in names
+        appname=${appname//./_}
         var_declarationId="\"id\":\"declaration_for_$appname\""
         var_declarationRemark="\"remark\":\"remark for_$appname\""
         # read all relevat AS2 variables in BASH variables for reuse
