@@ -2,11 +2,23 @@
 
 ## Introduction
 
-this tool helps to convert BIG-IP AS2 confgs into AS3 declarations
+this tool helps to convert BIG-IP AS2 confgs into AS3 declarations.
+It is an offline tool, so you do not need a BIG-IP for the conversion itself. BUT, before deploying the AS3 declaration in production it is highly recommended to perform following tests:
+
+- Take the output AS3 declarations and load it in a lab environment to test successfull deployment. A lab can be a BIG-IP Virtual Edition (VE) or physical device, including Viprion and vCMP instances. It is mandatory that the Lab infrastructure has the same sw version and module provisioning as the originating isntance.
+- Test in a lab environment if the application works as expected after the declaration. Run traffic through it.
+
+### Performance of AS3 config
+
+This conversion tool does not give performance guarantees. It just converts the AS2 config declaration to AS3 config declaration. You can perform performance tests, but this is out of scope of this tool.
 
 ## Documentation
 
-Documentation is in the "documentation" folder of this repository.
+Documentation is in the "documentation" folder of this repository. Click [here](./documentation/readme.md)
+
+## Where to find the tool
+
+The tool is located in the "files/conversion_tool" folder of this repo
 
 ### F5 Networks Contributor License Agreement
 
