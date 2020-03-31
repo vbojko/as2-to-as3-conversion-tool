@@ -54,6 +54,7 @@ filelocation="./$location/"
         appname=$( jq -r  ".name" $file )
         # replace dots in appname with underscore
         appname=${appname//./_}
+        appname=${appname//-/_}
         poolBlob="{ \"serverpool\": { \"class\": \"Pool\" "
         var_LbMethod=" \"loadBalancingMode\": \"round-robin\" "
         while [ $tablescounter -lt $tableslength ]

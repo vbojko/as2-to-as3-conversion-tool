@@ -46,6 +46,7 @@ else
         appname=$( jq -r  ".name" $file )
         #replacong dots with underscores for appname
         appname=${appname//./_}
+        appname=${appname//-/_}
         echo ""
         echo "variable reformating: File currently worked on: $file"
         variablecount=$( jq ".variables" $file | jq length)
