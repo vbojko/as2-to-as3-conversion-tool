@@ -60,6 +60,7 @@ else
         appname=$( jq -r  ".name" $file )
         # replace dots in appname with underscores, becasue there are some issues with dots in names
         appname=${appname//./_}
+        appname=${appname//-/_}
         var_declarationId="\"id\":\"declaration_for_$appname\""
         var_declarationRemark="\"remark\":\"remark for_$appname\""
         # read all relevat AS2 variables in BASH variables for reuse
