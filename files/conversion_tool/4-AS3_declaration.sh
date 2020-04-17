@@ -2,8 +2,7 @@
 # This script parses all objects in the as2 variables array finds similarities between configs.
 # AS2 declarations with similar configs are moved in the same folder.
 # The folders are created in the $location folder
-# The goal is to use the csv to supprot easier pattern finding for as3 templates
-
+# The goal is to use the csv to supprot easier pattern finding for as3 template
 while getopts d: option
 do
     case "${option}"
@@ -124,7 +123,7 @@ else
         if [[ ! "$var_serverSSL" == "null" ]]; then
             # We expect to have frontend SSL configured if backend SSL is defined.
             # per default we define a new frontend SSL profile with key and cert. Definition of key and cert is in the servicemain body. 
-            var_ServicemainClientSSL="\"serverTLS\":\"AS3clientSslprofile\""
+            var_ServicemainClientSSL="\"serverTLS\":\"AS3ClientSslProfile\""
             # In case the AS2 definition has no key and cert but references to an existing SSL profile on BIG-IP 
             # we do not need the SSL profile definition in the Servicemain body. Instead we point to the existing profile
             if [[ ! $var_clientSSLProfile == "null" ]]; then
@@ -136,7 +135,7 @@ else
             echo "client ssl profile reference"
             # If ServerSSL profile is not defined we check if clientSSL profile is defined.
             # If so, then per defualt we create a new client SSL rpofile if cert and key is defined. 
-            var_ServicemainClientSSL="\"serverTLS\":\"AS3clientSslprofile\""
+            var_ServicemainClientSSL="\"serverTLS\":\"AS3ClientSslProfile\""
             # In case the AS2 definition has no key and cert but references to an existing SSL profile on BIG-IP 
             # we do not need the SSL profile definition in the Servicemain body. Instead we point to the existing profile
             var_ServicemainClientSSL="\"serverTLS\":{\"bigip\":$var_clientSSLProfile}"
@@ -147,7 +146,7 @@ else
         # Append SNAT Automap
         if [[ "$var_snat" == "automap" ]]; then
                 var_ServicemainSnat="\"snat\":\"auto\""
-                var_Servicemain="$var_Servicemain, $var_ServicemainSnat  }  "
+                var_Servicemain="$var_Servicemain, $var_ServicemainSnat "
         fi
         # Append default persistency profile
         if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
@@ -207,10 +206,7 @@ else
         # End Servicemain body
         # End Template logic
         #echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody  }}} " > $filelocation/as3/declaration/as3final_test_$appname.json
-        echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody }}} " | jq . > $filelocation/as3/declaration/as3final_$appname.json
-    
-      
-    
+        echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody }}}} " | jq . > $filelocation/as3/declaration/as3final_$appname.json
     done
 fi
 
