@@ -23,22 +23,18 @@ else
     else
         mkdir ./$location
     fi
-
     if [ -d "$location/as3" ] 
     then
         echo "Directory $location/as3 exists." 
     else
         mkdir ./$location/as3
     fi
-
     if [ -d "$location/as3/declaration" ] 
     then
         echo "Directory $location/as3/declaration exists." 
     else
         mkdir ./$location/as3/declaration
     fi
-
-
     # AS3 header variables
     var_headerClass="\"class\":\"AS3\""
     var_action="\"action\": \"deploy\""
@@ -65,7 +61,8 @@ else
         var_declarationId="\"id\":\"declaration_for_$appname\""
         var_declarationRemark="\"remark\":\"remark for_$appname\""
         # read all relevat AS2 variables in BASH variables for reuse
-        var_clientSSLcert=$( jq ".vs__ProfileClientSSL" ./$filelocation/as3/variables/as3_variables_$appname.json)
+        var_clientSSLProfile=$( jq ".vs__ProfileClientSSL" ./$filelocation/as3/variables/as3_variables_$appname.json)
+        var_clientSSLcert=$( jq ".vs__ProfileClientSSLCert" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_clientSSLkey=$( jq ".vs__ProfileClientSSLKey" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_clientSSLChain=$( jq ".vs__ProfileClientSSLChain" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_clientSSLCipher=$( jq ".vs__ProfileClientSSLCipherString" ./$filelocation/as3/variables/as3_variables_$appname.json)
@@ -96,167 +93,121 @@ else
                 var_ServicemainSnat="\"snat\":\"auto\""
         fi
         # Template logic - put here
-        echo $var_clientSSLcert
-        if [[ "$var_httpProfile" == "null" ]]; then  # This is used for non HTTP but TCP traffic
-            echo "tcp"
+        # Begin Servicemain header Section
+        if [[ "$var_httpProfile" == "null" ]]; then  # This is used for TCP virtual servers without an HTTP profile attached
+            echo "tcp - no http profile"
             var_ServicemainTemplate="\"template\":\"tcp\""
-            var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
             var_ServicemainClass="\"class\":\"Service_TCP\""
-            var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
-            var_ServicemainPool="\"pool\":\"serverpool\""
-            var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat  }  "
-                if [[ ! "$var_serverSSL" == "null" ]]; then  # This section is used when the BIG-IP reencrypts the TLS session to the backend server
-                        echo "serverssl without HTTP profile"
-                        var_ServicemainTemplate="\"template\":\"https\""
-                        var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
-                        var_ServicemainClass="\"class\":\"Service_HTTPS\""
-                        var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
-                        var_ServicemainPool="\"pool\":\"serverpool\""
-                        var_ServicemainServerSSL="\"serverTLS\":\"ServerSslprofile\""
-                        var_ServicemainClientSSL="\"clientTLS\":\"ClientSslProfile\""
-                        # Create preliminary Servicemain declaration. have to add SSL specific information
-                        var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat, $var_ServicemainServerSSL, $var_ServicemainClientSSL"
-                        if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
-                            var_ServicemainPersistence="\"persistenceMethods\": [\"cookie\"]  "
-                            var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
-                        fi
-                        if [[ "$var_fallbackPersistency" == *"source_addr"* ]]; then
-                        var_ServicemainFallbackPersistence="\"fallbackPersistenceMethod\":\"source-address\""
-                        var_Servicemain="$var_Servicemain, $var_ServicemainFallbackPersistence"
-                        fi
-                        #closing ServiceMain variable
-                        var_Servicemain="$var_Servicemain}"
-                        # creating clientSSL profile
-                        var_serverSSLProfile="\"ServerSslprofile\": {\"class\":\"TLS_Server\", \"ciphers\":$var_clientSSLCipher, \"certificates\":[{\"certificate\":\"serversslcert\"}]}, \"serversslcert\":{\"class\":\"Certificate\", \"certificate\":{\"bigip\":$var_clientSSLcert}, \"chainCA\":{\"bigip\":$var_clientSSLChain}, \"privateKey\":{\"bigip\":$var_clientSSLkey}}  "
-                        # Modify to incorporate certificate CS's $var_clientSSLChain
-                        var_clientSSLProfile="\"ClientSslProfile\": {\"class\":\"TLS_Client\", \"validateCertificate\": false }"
-                        #closing declaration
-                        var_Servicemain="$var_Servicemain, $var_serverSSLProfile, $var_clientSSLProfile"
-                elif [[ ! "$var_clientSSLcert" == "null" ]]; then  # this is used if no server ssl profile is configured, but only client ssl
-                        echo "clientssl without HTTP profile"
-                        var_ServicemainTemplate="\"template\":\"https\""
-                        var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
-                        var_ServicemainClass="\"class\":\"Service_HTTPS\""
-                        var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
-                        var_ServicemainPool="\"pool\":\"serverpool\""
-                        var_ServicemainServerSSL="\"serverTLS\":\"ServerSslprofile\""
-                        # Create preliminary Servicemain declaration. have to add SSL specific information
-                        var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat, $var_ServicemainServerSSL"
-                        if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
-                            var_ServicemainPersistence="\"persistenceMethods\": [\"cookie\"]  "
-                            var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
-                        fi
-                        if [[ "$var_fallbackPersistency" == *"source_addr"* ]]; then
-                            var_ServicemainFallbackPersistence="\"fallbackPersistenceMethod\":\"source-address\""
-                            var_Servicemain="$var_Servicemain, $var_ServicemainFallbackPersistence"
-                        fi
-                        #closing ServiceMain variable
-                        var_Servicemain="$var_Servicemain}"
-                        # creating clientSSL profile
-                        var_serverSSLProfile="\"ServerSslprofile\": {\"class\":\"TLS_Server\", \"ciphers\":$var_clientSSLCipher, \"certificates\":[{\"certificate\":\"serversslcert\"}]}, \"serversslcert\":{\"class\":\"Certificate\", \"certificate\":{\"bigip\":$var_clientSSLcert}, \"chainCA\":{\"bigip\":$var_clientSSLChain}, \"privateKey\":{\"bigip\":$var_clientSSLkey}}  "
-                        # Modify to incorporate certificate CS's $var_clientSSLChain
-                        #closing declaration
-                        var_Servicemain="$var_Servicemain, $var_serverSSLProfile"
-                fi
-        elif [[ ! "$var_serverSSL" == "null" ]]; then  # This section is used when the BIG-IP reencrypts the TLS session to the backend server
-            echo "serverssl"
+        elif [[ ! "$var_serverSSL" == "null" ]]; then # Sets https template and Service_HTTP class
+            echo "backend serverssl" 
             var_ServicemainTemplate="\"template\":\"https\""
-            var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
             var_ServicemainClass="\"class\":\"Service_HTTPS\""
-            var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
-            var_ServicemainPool="\"pool\":\"serverpool\""
-            var_ServicemainServerSSL="\"serverTLS\":\"ServerSslprofile\""
-            var_ServicemainClientSSL="\"clientTLS\":\"ClientSslProfile\""
-            # Create preliminary Servicemain declaration. have to add SSL specific information
-            var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat, $var_ServicemainServerSSL, $var_ServicemainClientSSL"
-            if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
-                var_ServicemainPersistence="\"persistenceMethods\": [\"cookie\"]  "
-                var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
-            fi
-            if [[ "$var_fallbackPersistency" == *"source_addr"* ]]; then
-                var_ServicemainFallbackPersistence="\"fallbackPersistenceMethod\":\"source-address\""
-                var_Servicemain="$var_Servicemain, $var_ServicemainFallbackPersistence"
-            fi
-            #closing ServiceMain variable
-            var_Servicemain="$var_Servicemain}"
-            # creating clientSSL profile
-            var_serverSSLProfile="\"ServerSslprofile\": {\"class\":\"TLS_Server\", \"ciphers\":$var_clientSSLCipher, \"certificates\":[{\"certificate\":\"serversslcert\"}]}, \"serversslcert\":{\"class\":\"Certificate\", \"certificate\":{\"bigip\":$var_clientSSLcert}, \"chainCA\":{\"bigip\":$var_clientSSLChain}, \"privateKey\":{\"bigip\":$var_clientSSLkey}}  "
-            # Modify to incorporate certificate CS's $var_clientSSLChain
-            var_clientSSLProfile="\"ClientSslProfile\": {\"class\":\"TLS_Client\", \"validateCertificate\": false }"
-            #closing declaration
-            var_Servicemain="$var_Servicemain, $var_serverSSLProfile, $var_clientSSLProfile"
-        elif [[ ! "$var_clientSSLcert" == "null" ]]; then  # this is used if no server ssl profile is configured, but only client ssl
-            echo "clientssl"
+        elif [[ ! "$var_clientSSLcert" == "null" ]]; then # Sets https template and Service_HTTP class
+            echo "frontend clientssl" 
             var_ServicemainTemplate="\"template\":\"https\""
-            var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
+            var_ServicemainClass="\"class\":\"Service_HTTPS\"" 
+        elif [[ ! "$var_clientSSLProfile" == "null" ]]; then # Sets https template and Service_HTTP class
+            echo "frontend clientssl profile reference" 
+            var_ServicemainTemplate="\"template\":\"https\""
             var_ServicemainClass="\"class\":\"Service_HTTPS\""
-            var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
-            var_ServicemainPool="\"pool\":\"serverpool\""
-            var_ServicemainServerSSL="\"serverTLS\":\"ServerSslprofile\""
-            # Create preliminary Servicemain declaration. have to add SSL specific information
-            var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat, $var_ServicemainServerSSL"
-            if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
-                var_ServicemainPersistence="\"persistenceMethods\": [\"cookie\"]  "
-                var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
-            fi
-            if [[ "$var_fallbackPersistency" == *"source_addr"* ]]; then
-                var_ServicemainFallbackPersistence="\"fallbackPersistenceMethod\":\"source-address\""
-                var_Servicemain="$var_Servicemain, $var_ServicemainFallbackPersistence"
-            fi
-            #closing ServiceMain variable
-            var_Servicemain="$var_Servicemain}"
-            # creating clientSSL profile
-            var_serverSSLProfile="\"ServerSslprofile\": {\"class\":\"TLS_Server\", \"ciphers\":$var_clientSSLCipher, \"certificates\":[{\"certificate\":\"serversslcert\"}]}, \"serversslcert\":{\"class\":\"Certificate\", \"certificate\":{\"bigip\":$var_clientSSLcert}, \"chainCA\":{\"bigip\":$var_clientSSLChain}, \"privateKey\":{\"bigip\":$var_clientSSLkey}}  "
-            # Modify to incorporate certificate CS's $var_clientSSLChain
-            #closing declaration
-            var_Servicemain="$var_Servicemain, $var_serverSSLProfile"
-
-         elif [[ ! "$var_httpProfile" == "null"  ]]; then  # this is used if only HTTP Services are configured
-            echo "http only"
+        elif [[ ! "$var_httpProfile" == "null"  ]]; then  # sets http template and Service_HTTP class
+            echo "http profile detected"
             var_ServicemainTemplate="\"template\":\"http\""
-            var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
             var_ServicemainClass="\"class\":\"Service_HTTP\""
-            var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
-            var_ServicemainPool="\"pool\":\"serverpool\""
-            # Create preliminary Servicemain declaration. have to add SSL specific information
-            var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat"
-            if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
-                var_ServicemainPersistence="\"persistenceMethods\": [\"cookie\"]  "
-                var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
+        fi 
+        var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
+        var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
+        var_ServicemainPool="\"pool\":\"serverpool\""
+        # First servicemain definition
+        var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool" 
+        # Append Backend encryption profile if server SSL profile is defined
+        if [[ ! "$var_serverSSL" == "null" ]]; then
+            # We expect to have frontend SSL configured if backend SSL is defined.
+            # per default we define a new frontend SSL profile with key and cert. Definition of key and cert is in the servicemain body. 
+            var_ServicemainClientSSL="\"serverTLS\":\"AS3clientSslprofile\""
+            # In case the AS2 definition has no key and cert but references to an existing SSL profile on BIG-IP 
+            # we do not need the SSL profile definition in the Servicemain body. Instead we point to the existing profile
+            if [[ ! $var_clientSSLProfile == "null" ]]; then
+                var_ServicemainClientSSL="\"serverTLS\":{\"bigip\":$var_clientSSLProfile}"
             fi
-            if [[ "$var_fallbackPersistency" == *"source_addr"* ]]; then
-                var_ServicemainFallbackPersistence="\"fallbackPersistenceMethod\":\"source-address\""
-                var_Servicemain="$var_Servicemain, $var_ServicemainFallbackPersistence"
-            fi
-            #closing ServiceMain variable
-            var_Servicemain="$var_Servicemain}"        
-            
-        
-        elif [[ ! "$var_httpProfile" == "null"  ]]; then  # this is used if only HTTP Services are configured
-            echo "http only"
-            var_ServicemainTemplate="\"template\":\"http\""
-            var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
-            var_ServicemainClass="\"class\":\"Service_HTTP\""
-            var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
-            var_ServicemainPool="\"pool\":\"serverpool\""
-            # Create preliminary Servicemain declaration. have to add SSL specific information
-            var_Servicemain="\"serviceMain\": { $var_ServicemainClass, $var_ServicemainVIP, $var_ServicemainVirtualPort, $var_ServicemainPool, $var_ServicemainSnat"
-            if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
-                var_ServicemainPersistence="\"persistenceMethods\": [\"cookie\"]  "
-                var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
-            fi
-            if [[ "$var_fallbackPersistency" == *"source_addr"* ]]; then
-                var_ServicemainFallbackPersistence="\"fallbackPersistenceMethod\":\"source-address\""
-                var_Servicemain="$var_Servicemain, $var_ServicemainFallbackPersistence"
-            fi
-            #closing ServiceMain variable
-            var_Servicemain="$var_Servicemain}"        
-            # In some usecases admin added an http profile manually. 
+            var_ServicemainServerSSL="\"clientTLS\": {\"bigip\": $var_serverSSL }"
+            var_Servicemain="$var_Servicemain, $var_ServicemainClientSSL, $var_ServicemainServerSSL"
+        elif [[ ! "$var_clientSSLcert" == "null" ]]; then
+            echo "client ssl profile reference"
+            # If ServerSSL profile is not defined we check if clientSSL profile is defined.
+            # If so, then per defualt we create a new client SSL rpofile if cert and key is defined. 
+            var_ServicemainClientSSL="\"serverTLS\":\"AS3clientSslprofile\""
+            # In case the AS2 definition has no key and cert but references to an existing SSL profile on BIG-IP 
+            # we do not need the SSL profile definition in the Servicemain body. Instead we point to the existing profile
+            var_ServicemainClientSSL="\"serverTLS\":{\"bigip\":$var_clientSSLProfile}"
+        elif [[ ! $var_clientSSLProfile == "null" ]]; then
+            var_ServicemainClientSSL="\"serverTLS\":{\"bigip\":$var_clientSSLProfile}"
+            var_Servicemain="$var_Servicemain, $var_ServicemainClientSSL"
         fi
+        # Append SNAT Automap
+        if [[ "$var_snat" == "automap" ]]; then
+                var_ServicemainSnat="\"snat\":\"auto\""
+                var_Servicemain="$var_Servicemain, $var_ServicemainSnat  }  "
+        fi
+        # Append default persistency profile
+        if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
+            var_ServicemainPersistence="\"persistenceMethods\": [\"cookie\"]  "
+            var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
+        fi
+        # Append fallback persistency profile
+        if [[ "$var_fallbackPersistency" == *"source_addr"* ]]; then
+            var_ServicemainFallbackPersistence="\"fallbackPersistenceMethod\":\"source-address\""
+            var_Servicemain="$var_Servicemain, $var_ServicemainFallbackPersistence"
+        fi
+        # Append OneConnect profile
+        if [[ ! "$var_Oneconnect" == "null" ]]; then
+            echo "oneconnect"
+            var_Servicemain="$var_Servicemain, \"profileMultiplex\": { \"bigip\": $var_Oneconnect} "
+        fi
+        # Append iRules
+        if [[ ! "$var_iRules" == "null" ]]; then
+            echo "iRule detected"
+            var_Servicemain="$var_Servicemain, \"iRules\": [{ \"bigip\": $var_iRules} ]"
+        fi
+        # Closing Servicemain header
+        var_Servicemain="$var_Servicemain}"
+        # End Servicemain header
+        
+        # begin Servicemain body
+        # per default var_Servicemainbody has the pool definition
+        var_Servicemainbody="$var_pool"
+        # Append Client SSL profile in case ServerSSL profile is configured. We assume we use client and serverSSL together
+        if [[ ! "$var_serverSSL" == "null" ]]; then
+            # Do this only, if a ssl key and cert is provided. 
+            # Do not define clientssl profile if in AS2 declaration a reference to an existing client SSL profile exists
+            if [[ "$var_clientSSLProfile" == "null" ]]; then
+            var_AS3clientsslprof="\"AS3ClientSslProfile\": {\
+            \"class\":\"TLS_Server\", \
+            \"ciphers\":$var_clientSSLCipher, \
+            \"certificates\":[\
+                {\"certificate\":\"serversslcert\"}]}, \
+                \"serversslcert\":{\"class\":\"Certificate\", \
+                    \"certificate\":{\"bigip\":$var_clientSSLcert}, \
+                    \"chainCA\":{\"bigip\":$var_clientSSLChain}, \
+                    \"privateKey\":{\"bigip\":$var_clientSSLkey}}  "
+            var_Servicemainbody="$var_Servicemainbody, $var_AS3clientsslprof "
+            fi
+        elif [[ ! "$var_clientSSLcert" == "null" ]]; then
+            var_AS3clientsslprof="\"AS3ClientSslProfile\": {\
+            \"class\":\"TLS_Server\", \
+            \"ciphers\":$var_clientSSLCipher, \
+            \"certificates\":[\
+                {\"certificate\":\"serversslcert\"}]}, \
+                \"serversslcert\":{\"class\":\"Certificate\", \
+                    \"certificate\":{\"bigip\":$var_clientSSLcert}, \
+                    \"chainCA\":{\"bigip\":$var_clientSSLChain}, \
+                    \"privateKey\":{\"bigip\":$var_clientSSLkey}}  "
+            var_Servicemainbody="$var_Servicemainbody, $var_AS3clientsslprof "
+        fi
+        # End Servicemain body
         # End Template logic
-
-        #echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain,  $var_pool }}}} " > $filelocation/as3/declaration/as3final_test_$appname.json
-        echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain,  $var_pool }}}} " | jq . > $filelocation/as3/declaration/as3final_$appname.json
+        #echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody  }}} " > $filelocation/as3/declaration/as3final_test_$appname.json
+        echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody }}} " | jq . > $filelocation/as3/declaration/as3final_$appname.json
     
       
     
