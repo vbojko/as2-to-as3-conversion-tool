@@ -2,7 +2,8 @@
 # This script parses all objects in the as2 variables array finds similarities between configs.
 # AS2 declarations with similar configs are moved in the same folder.
 # The folders are created in the $location folder
-# The goal is to use the csv to supprot easier pattern finding for as3 template
+# The goal is to use the csv to supprot easier pattern finding for as3 templates
+
 while getopts d: option
 do
     case "${option}"
@@ -152,6 +153,9 @@ else
         if [[ "$var_defaultPersistency" == *"cookie"* ]]; then
             var_ServicemainPersistence="\"persistenceMethods\": [\"cookie\"]  "
             var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
+        else 
+            var_ServicemainPersistence="\"persistenceMethods\": []  "
+            var_Servicemain="$var_Servicemain, $var_ServicemainPersistence"
         fi
         # Append fallback persistency profile
         if [[ "$var_fallbackPersistency" == *"source_addr"* ]]; then
@@ -207,7 +211,8 @@ else
         # End Template logic
         #echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody  }}} " > $filelocation/as3/declaration/as3final_test_$appname.json
         echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody }}}} " | jq . > $filelocation/as3/declaration/as3final_$appname.json
+    
+      
+    
     done
 fi
-
-
