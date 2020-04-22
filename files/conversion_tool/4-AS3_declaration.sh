@@ -68,7 +68,7 @@ else
         var_clientSSLCipher=$( jq ".vs__ProfileClientSSLCipherString" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_serverSSL=$( jq ".vs__ProfileServerSSL" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_httpProfile=$( jq ".vs__ProfileHTTP" ./$filelocation/as3/variables/as3_variables_$appname.json)
-        var_VIPIP=$( jq -r ".pool__addr" ./$filelocation/as3/variables/as3_variables_$appname.json)
+        var_VIPIP=$( jq  ".pool__addr" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_VIPPort=$( jq -r ".pool__port" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_IpProtocol=$( jq ".vs__IpProtocol" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_TcpProfile=$( jq ".vs__ProfileClientProtocol" ./$filelocation/as3/variables/as3_variables_$appname.json)
@@ -78,21 +78,11 @@ else
         var_snat=$( jq -r ".vs__SNATConfig" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_iRules=$( jq ".vs__Irules" ./$filelocation/as3/variables/as3_variables_$appname.json)
         var_pool="\"serverpool\": $( jq ".serverpool" ./$filelocation/as3/pools/as3_pools_$appname.json)"
-        #shared VIP name does not support "%"". replace "%" with "_" 
-        var_sharedVIPName=${var_VIPIP//%/_}
-        var_sharedVIPdefinition="
-        \"Common\": { \
-        \"class\": \"Tenant\", \
-        \"Shared\": { \
-            \"class\": \"Application\", \
-            \"template\": \"shared\", \
-            \"ip_$var_sharedVIPName\": { \
-                \"class\": \"Service_Address\", \
-                \"virtualAddress\": \"$var_VIPIP\" }}}"
+
         # Creating the AS3 header:
         var_as3Header=" $var_headerClass, $var_action, $var_persist, $var_declaration  "
         # Creating the AS3 declaration header
-        var_as3Declaration=" $var_declarationClass, $var_schemaVersion, $var_declarationId, $var_declarationLabel, $var_declarationRemark, $var_sharedVIPdefinition,\"$appname\": { \"class\": \"Tenant\" "
+        var_as3Declaration=" $var_declarationClass, $var_schemaVersion, $var_declarationId, $var_declarationLabel, $var_declarationRemark, \"$appname\": { \"class\": \"Tenant\" "
         
         var_AppDeclaration="\"$appname\": { \"class\":\"Application\"  "
         # Creating the AS3 Service header
@@ -125,7 +115,7 @@ else
             var_ServicemainTemplate="\"template\":\"http\""
             var_ServicemainClass="\"class\":\"Service_HTTP\""
         fi 
-        var_ServicemainVIP="\"virtualAddresses\": [ { \"use\": \"/Common/Shared/ip_$var_sharedVIPName\"} ]"
+        var_ServicemainVIP="\"virtualAddresses\": [ $var_VIPIP ]"
         var_ServicemainVirtualPort="\"virtualPort\":$var_VIPPort"
         var_ServicemainPool="\"pool\":\"serverpool\""
         # First servicemain definition
@@ -219,7 +209,7 @@ else
         fi
         # End Servicemain body
         # End Template logic
-        echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody  }}} " > $filelocation/as3/declaration/as3final_test_$appname.json
+        #echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody  }}} " > $filelocation/as3/declaration/as3final_test_$appname.json
         echo " { $var_as3Header $var_as3Declaration, $var_AppDeclaration, $var_ServicemainTemplate, $var_Servicemain, $var_Servicemainbody }}}} " | jq . > $filelocation/as3/declaration/as3final_$appname.json
     
       

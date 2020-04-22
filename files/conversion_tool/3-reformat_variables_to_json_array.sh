@@ -38,13 +38,13 @@ else
     
     # Now I tell the script in which folder my input files are
     filelocation="$location"
-    #Adding the for loop for every file on the filelocation folder
-    #echo "filelocation: $filelocation"
+    # Adding the for loop for every file on the filelocation folder
+    # echo "filelocation: $filelocation"
     
     for file in $filelocation/*.json
     do
         appname=$( jq -r  ".name" $file )
-        #replacong dots with underscores for appname
+        #replacing dots and dashes with underscores for appname
         appname=${appname//./_}
         appname=${appname//-/_}
         echo ""

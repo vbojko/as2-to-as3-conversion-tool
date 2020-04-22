@@ -269,7 +269,7 @@ filelocation="./$location/"
                             fi
                             monitorpointer=$(( $monitorpointer + 1 ))
                         done
-                        var_monitorBlob=" \"monitors\": [ $var_monitorBlob ] "
+                        var_monitorBlob=" \"minimumMonitors\":1, \"monitors\": [ $var_monitorBlob ] "
 
                     fi
             fi
